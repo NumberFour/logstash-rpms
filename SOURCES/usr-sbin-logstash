@@ -1,0 +1,3 @@
+#!/bin/bash
+FULLNAME="$0"
+exec -a "${FULLNAME}" java -jar /usr/share/logstash/logstash-@@@version@@@-monolithic.jar $@

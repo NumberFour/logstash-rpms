@@ -1,0 +1,21 @@
+#! /bin/bash
+
+usage() {
+    echo "$0 - a script to build elasticsearch rpms"
+    echo "Options:"
+    echo " -d - do package the rpm"
+}
+
+if [ "$1" != "-d" ]; then
+    usage
+    exit 1
+fi
+
+# build spec file
+readonly BASEDIR=$(readlink -f $(dirname "$0")/../)
+mkdir -p ${BASEDIR}/{RPMS,BUILD}
+rpmbuild --verbose \
+    --define "_topdir ${BASEDIR}" \
+    -bb "${BASEDIR}/SPECS/logstash.spec"
+
+

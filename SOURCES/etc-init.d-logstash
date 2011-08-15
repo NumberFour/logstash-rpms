@@ -1,0 +1,121 @@
+#!/bin/bash
+#
+# Startup script for the Numberfour webservice
+#
+# chkconfig: 2345 80 05
+# description: @project.name@-@service.api.version@
+#
+# config: /opt/@project.name@-@service.api.version@/conf/current
+# pidfile: /opt/@project.name@-@service.api.version@/pid
+
+source /etc/rc.d/init.d/functions
+
+RETVAL=0
+NAME=@project.name@-@service.api.version@
+DAEMON=/opt/@project.name@-@service.api.version@/run
+LOGROTATE=/opt/@project.name@-@service.api.version@/conf/logrotate
+PIDFILE=/var/run/@project.name@-@service.api.version@.pid
+SUBSYS=/var/lock/subsys/@project.name@-@service.api.version@
+DAEMON_ARGS=""
+START_STOP_OPTS=""
+RUN_AS="nobody"
+START_WAIT=180
+START_STEP=5
+
+start() {
+    echo "Starting $NAME ($DAEMON): "
+    # Return
+    #   0 if daemon has been started
+    #   1 if daemon was already running
+    #   2 if daemon could not be started
+    if pgrep -f "${DAEMON}"; then
+	return 1
+    fi
+    logrotate -f "${LOGROTATE}"
+    start-stop-daemon --start ${START_STOP_OPTS} --chuid "${RUN_AS}" --background --make-pidfile --pidfile "${PIDFILE}" --exec "${DAEMON}" -- ${DAEMON_ARGS}
+    RETVAL="$?"
+    [ "${RETVAL}" -eq 0 ] && touch "${SUBSYS}"
+
+    if [ "${RETVAL}" == 0 ]; then
+	for ((i=0; i<$START_WAIT; i+=$START_STEP)); do
+	    # is the process running?
+	    status -p "${PIDFILE}" "${NAME}" >/dev/null 2>&1
+	    [ "${RETVAL}" -eq 0 ] || break
+
+	    # check status page
+	    curl "http://127.0.0.1:@service.port@" >/dev/null 2>&1
+	    RETVAL=$?
+
+	    # wait
+	    [ "${RETVAL}" -eq 0 ] && break
+	    echo -n "."
+	    sleep $START_STEP
+	done
+    fi
+    return "${RETVAL}"
+}
+
+stop() {
+    echo "Shutting down $NAME ($DAEMON): "
+
+    # Return
+    #   0 if daemon has been stopped
+    #   1 if daemon was already stopped
+    #   2 if daemon could not be stopped
+    #   other if a failure occurred
+    start-stop-daemon --stop ${START_STOP_OPTS} --retry=TERM/30/KILL/5 --pidfile "${PIDFILE}"
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+
+    # Wait for children to finish too if this is a daemon that forks
+    # and if the daemon is only ever run from this initscript.
+    # If the above conditions are not satisfied then add some other code
+    # that waits for the process to drop all resources that could be
+    # needed by services started subsequently.  A last resort is to
+    # sleep for some time.
+    pkill -KILL -f "${DAEMON}"
+    RC="$?"
+    case "${RC}" in
+	0|1)
+	    ;;
+	*)
+	    return 2
+	    ;;
+    esac
+
+    # Many daemons don't delete their pidfiles when they exit.
+    rm -f "${PIDFILE}" "${SUBSYS}"
+
+    return "${RETVAL}"
+}
+
+restart() {
+    "$0" stop
+    "$0" start
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    restart)
+	restart
+	;;
+    condrestart)
+	[ -e "${SUBSYS}" ] && restart
+	RETVAL="$?"
+	;;
+    status)
+	status -p "${PIDFILE}" "${NAME}"
+	RETVAL="$?"
+	;;
+    *)
+	echo $"Usage $0 {start|stop|restart|reload|condrestart|status}"
+	RETVAL=1
+esac
+
+exit "${RETVAL}"
+
