@@ -14,6 +14,7 @@ Source2:        etc-logstash.conf
 Source3:        usr-sbin-logstash
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildArch:      noarch
 
 Requires:       java
 
