@@ -3,4 +3,5 @@ RPMS
 .*
 \#*
 *~
-SOURCES/logstash-*-monolithic.jar
+SOURCES/logstash-*-monolithic.jar*
+SOURCES/grok*.tar.gz*
