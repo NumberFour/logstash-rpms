@@ -26,17 +26,19 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 
+mv $RPM_BUILD_ROOT/usr/lib  $RPM_BUILD_ROOT/usr/_lib
+mv $RPM_BUILD_ROOT/usr/_lib $RPM_BUILD_ROOT/%{_libdir}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
-
 
 %files
 %defattr(-,root,root,-)
 /usr/bin
 /usr/include
-/usr/lib
 /usr/share
-%doc
+%{_libdir}
 
+%doc
 
 %changelog
