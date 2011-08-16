@@ -12,6 +12,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:	pcre-devel
 BuildRequires:	libevent-devel
 BuildRequires:	gperf
+BuildRequires:	tokyocabinet-devel
 
 %description
 Grok is simple software that allows you to easily parse logs and other files. With grok, you can turn unstructured log and event data into structured data.
