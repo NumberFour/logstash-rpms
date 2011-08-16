@@ -1,4 +1,4 @@
 #!/bin/bash
 cd /var/lib/logstash
 FULLNAME="$0"
-exec -a "${FULLNAME}" java -cp /etc/logstash/:/usr/share/logstash/logstash-@@@version@@@-monolithic.jar logstash.runner agent -f /etc/logstash/logstash.conf -- web --backend "elasticsearch:///?local"
+exec -a "${FULLNAME}" java -cp /etc/logstash/:/usr/share/logstash/logstash-@@@version@@@-monolithic.jar logstash.runner agent "$@" -- web --backend "elasticsearch:///?local"
