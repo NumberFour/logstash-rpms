@@ -14,8 +14,11 @@ fi
 # build spec file
 readonly BASEDIR=$(readlink -f $(dirname "$0")/../)
 mkdir -p ${BASEDIR}/{RPMS,BUILD}
-rpmbuild --verbose \
-    --define "_topdir ${BASEDIR}" \
-    -bb "${BASEDIR}/SPECS/logstash.spec"
+
+for spec in grok logstash; do
+    rpmbuild --verbose \
+	--define "_topdir ${BASEDIR}" \
+	-bb "${BASEDIR}/SPECS/${spec}.spec"
+done
 
 
