@@ -1,0 +1,20 @@
+#! /bin/bash
+
+usage() {
+    echo "$0 - a script to fetch logstash sources"
+    echo "Options:"
+    echo " -d - do fetch the code"
+}
+
+if [ "$1" != "-d" ]; then
+    usage
+    exit 1
+fi
+
+BASEDIR=$(readlink -f $(dirname "$0")/../)
+
+mkdir -p "${BASEDIR}/SOURCES"
+cd "${BASEDIR}/SOURCES"
+
+wget http://semicomplete.com/files/logstash/logstash-1.0.14-monolithic.jar
+wget http://semicomplete.googlecode.com/files/grok-1.20110630.1.tar.gz
