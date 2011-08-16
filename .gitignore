@@ -3,3 +3,4 @@ RPMS
 .*
 \#*
 *~
+SOURCES/logstash-*-monolithic.jar

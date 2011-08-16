@@ -1,0 +1,98 @@
+#!/bin/bash
+#
+# Startup script for the Numberfour webservice
+#
+# chkconfig: 2345 80 05
+# description: Logstash
+#
+source /etc/rc.d/init.d/functions
+
+RETVAL=0
+NAME=logstash
+DAEMON=/usr/sbin/logstash
+PIDFILE=/var/run/logstash.pid
+SUBSYS=/var/lock/subsys/logstash
+DAEMON_ARGS=""
+START_STOP_OPTS="--verbose"
+RUN_AS="root"
+
+start() {
+    echo "Starting $NAME ($DAEMON): "
+    # Return
+    #   0 if daemon has been started
+    #   1 if daemon was already running
+    #   2 if daemon could not be started
+    if pgrep -f "${DAEMON}"; then
+	return 1
+    fi
+    start-stop-daemon --start ${START_STOP_OPTS} --chuid "${RUN_AS}" --background --make-pidfile --pidfile "${PIDFILE}" --exec "${DAEMON}" -- ${DAEMON_ARGS}
+    RETVAL="$?"
+
+    [ "${RETVAL}" -eq 0 ] && touch "${SUBSYS}"
+    return "${RETVAL}"
+}
+
+stop() {
+    echo "Shutting down $NAME ($DAEMON): "
+
+    # Return
+    #   0 if daemon has been stopped
+    #   1 if daemon was already stopped
+    #   2 if daemon could not be stopped
+    #   other if a failure occurred
+    start-stop-daemon --stop ${START_STOP_OPTS} --retry=TERM/30/KILL/5 --pidfile "${PIDFILE}"
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+
+    # Wait for children to finish too if this is a daemon that forks
+    # and if the daemon is only ever run from this initscript.
+    # If the above conditions are not satisfied then add some other code
+    # that waits for the process to drop all resources that could be
+    # needed by services started subsequently.  A last resort is to
+    # sleep for some time.
+    pkill -KILL -f "${DAEMON}"
+    RC="$?"
+    case "${RC}" in
+	0|1)
+	    ;;
+	*)
+	    return 2
+	    ;;
+    esac
+
+    # Many daemons don't delete their pidfiles when they exit.
+    rm -f "${PIDFILE}" "${SUBSYS}"
+
+    return "${RETVAL}"
+}
+
+restart() {
+    "$0" stop
+    "$0" start
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    restart)
+	restart
+	;;
+    condrestart)
+	[ -e "${SUBSYS}" ] && restart
+	RETVAL="$?"
+	;;
+    status)
+	status -p "${PIDFILE}" "${NAME}"
+	RETVAL="$?"
+	;;
+    *)
+	echo $"Usage $0 {start|stop|restart|reload|condrestart|status}"
+	RETVAL=1
+esac
+
+exit "${RETVAL}"
+
