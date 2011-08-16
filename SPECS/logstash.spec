@@ -22,17 +22,20 @@ Requires:       jdk
 
 Requires:       chkconfig initscripts
 
+# disable jar repackaging
+%define __os_install_post %{nil}
+
 %description
 logstash is a tool for managing events and logs. You can use it to collect logs, parse them, and store them for later use (like, for searching).
 
 %prep
 cp -p %SOURCE0 %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
-sed -i -e 's/@@@version@@@/%{version}/g' *
+find . -type f -print0 | xargs -0 --no-run-if-empty -- sed -i -e 's/@@@version@@@/%{version}/g'
 
 %install
 rm -rf "${RPM_BUILD_ROOT}"
 mkdir -p "${RPM_BUILD_ROOT}/usr/share/logstash/"
-install -D -m 644 -t "${RPM_BUILD_ROOT}/usr/share/logstash/" *.jar               
+install -D -m 644 -t "${RPM_BUILD_ROOT}/usr/share/logstash/" *.jar
 install -D -m 755 etc-rc.d-init.d-logstash          "${RPM_BUILD_ROOT}/etc/rc.d/init.d/logstash"
 install -D -m 644 etc-logstash-logstash.conf        "${RPM_BUILD_ROOT}/etc/logstash/logstash.conf"
 install -D -m 644 etc-logstash-log4j.properties     "${RPM_BUILD_ROOT}/etc/logstash/log4j.properties"
