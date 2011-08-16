@@ -11,7 +11,7 @@ if [ "$1" != "-d" ]; then
     exit 1
 fi
 
-# build spec file
+set -e
 readonly BASEDIR=$(readlink -f $(dirname "$0")/../)
 mkdir -p ${BASEDIR}/{RPMS,BUILD}
 
@@ -20,5 +20,3 @@ for spec in grok logstash; do
 	--define "_topdir ${BASEDIR}" \
 	-bb "${BASEDIR}/SPECS/${spec}.spec"
 done
-
-
