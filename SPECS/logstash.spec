@@ -18,6 +18,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
 Requires:       jdk
+Requires:       grok
 # Requires:       java
 
 Requires:       chkconfig initscripts
